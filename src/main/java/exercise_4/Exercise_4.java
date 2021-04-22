@@ -39,15 +39,13 @@ public class Exercise_4 {
 
 
 		final List<Tuple2<String,String>> edges =
-				new EdgesReader().getResource(EDGES_FILE_PATH, s -> {
-					final String[] splits = s.split("\t");
-					return new Tuple2(splits[0],splits[1]);
-				});
+				new ResourcesReaderImpl().getResource(EDGES_FILE_PATH, new Splitter());
+
+		final List<Tuple2<String,String>> vertices =
+				new ResourcesReaderImpl().getResource(VERTICES_FILE_PATH, new Splitter());
 
 	}
-
 }
-
 
 interface ResourcesReader {
 	List<Tuple2<String,String>> getResource(final String filePath, final ResourcesParser parser);
@@ -57,12 +55,24 @@ interface ResourcesParser {
 	Tuple2<String,String> parse(final String line);
 }
 
-class EdgesReader implements ResourcesReader {
+class Splitter implements ResourcesParser {
+
+	final static String SEPARATOR = "\t";
+
+	@Override
+	public Tuple2<String, String> parse(String line) {
+		final String[] splits = line.split(SEPARATOR);
+		return new Tuple2(splits[0],splits[1]);
+	}
+}
+
+class ResourcesReaderImpl implements ResourcesReader {
 
 	@Override
 	public List<Tuple2<String, String>> getResource(String filePath, final ResourcesParser parser) {
 
 		final List<Tuple2<String, String>> tuples = new LinkedList<>();
+
 		try {
 			final BufferedReader reader = new BufferedReader(new FileReader(filePath));
 			String line;
@@ -78,3 +88,5 @@ class EdgesReader implements ResourcesReader {
 	}
 
 }
+
+
