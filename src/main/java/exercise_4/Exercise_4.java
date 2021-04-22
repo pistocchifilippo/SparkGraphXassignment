@@ -43,7 +43,7 @@ public class Exercise_4 {
 				new StructField("id", DataTypes.StringType, true, new MetadataBuilder().build()),
 				new StructField("article", DataTypes.StringType, true, new MetadataBuilder().build()),
 		});
-		
+
 		StructType edges_schema = new StructType(new StructField[]{
 				new StructField("src", DataTypes.StringType, true, new MetadataBuilder().build()),
 				new StructField("dst", DataTypes.StringType, true, new MetadataBuilder().build()),
@@ -93,20 +93,20 @@ class ResourcesReaderImpl implements ResourcesReader {
 	@Override
 	public List<Row> getResource(String filePath, final ResourcesParser parser) {
 
-		final List<Row> tuples = new LinkedList<>();
+		final List<Row> rows = new LinkedList<>();
 
 		try {
 			final BufferedReader reader = new BufferedReader(new FileReader(filePath));
 			String line;
 			while ((line = reader.readLine()) != null) {
-				tuples.add(parser.parse(line));
+				rows.add(parser.parse(line));
 			}
 			reader.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-		return tuples;
+		return rows;
 	}
 
 }
