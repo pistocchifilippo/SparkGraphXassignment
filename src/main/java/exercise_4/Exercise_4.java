@@ -8,6 +8,7 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.MetadataBuilder;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.graphframes.GraphFrame;
@@ -23,36 +24,32 @@ import java.util.List;
 import scala.Tuple2;
 
 public class Exercise_4 {
-	
+
+	final static String FILE_SEPARATOR = File.separator;
+	final static String RESOURCES_FILE_PATH =
+			"src" + FILE_SEPARATOR +
+					"main" + FILE_SEPARATOR +
+					"resources";
+	final static String EDGES_FILE_PATH = RESOURCES_FILE_PATH + FILE_SEPARATOR + "wiki-edges.txt";
+	final static String VERTICES_FILE_PATH = RESOURCES_FILE_PATH + FILE_SEPARATOR + "wiki-vertices.txt";
+
 	public static void wikipedia(JavaSparkContext ctx, SQLContext sqlCtx) {
 
-	}
-
-	public static void main(String[] args) throws IOException {
-		final String FILE_SEPARATOR = File.separator;
-		final String RESOURCES_FILE_PATH =
-				"src" + FILE_SEPARATOR +
-				"main" + FILE_SEPARATOR +
-				"resources";
-		final String EDGES_FILE_PATH = RESOURCES_FILE_PATH + FILE_SEPARATOR + "wiki-edges.txt";
-		final String VERTICES_FILE_PATH = RESOURCES_FILE_PATH + FILE_SEPARATOR + "wiki-vertices.txt";
-
-
-		final List<Tuple2<String,String>> edges =
-				new ResourcesReaderImpl().getResource(EDGES_FILE_PATH, new Splitter());
-
-		final List<Tuple2<String,String>> vertices =
+		final List<Row> vertices =
 				new ResourcesReaderImpl().getResource(VERTICES_FILE_PATH, new Splitter());
 
+		final List<Row> edges =
+				new ResourcesReaderImpl().getResource(EDGES_FILE_PATH, new Splitter());
 	}
+
 }
 
 interface ResourcesReader {
-	List<Tuple2<String,String>> getResource(final String filePath, final ResourcesParser parser);
+	List<Row> getResource(final String filePath, final ResourcesParser parser);
 }
 
 interface ResourcesParser {
-	Tuple2<String,String> parse(final String line);
+	Row parse(final String line);
 }
 
 class Splitter implements ResourcesParser {
@@ -60,18 +57,18 @@ class Splitter implements ResourcesParser {
 	final static String SEPARATOR = "\t";
 
 	@Override
-	public Tuple2<String, String> parse(String line) {
+	public Row parse(String line) {
 		final String[] splits = line.split(SEPARATOR);
-		return new Tuple2(splits[0],splits[1]);
+		return RowFactory.create(splits[0],splits[1]);
 	}
 }
 
 class ResourcesReaderImpl implements ResourcesReader {
 
 	@Override
-	public List<Tuple2<String, String>> getResource(String filePath, final ResourcesParser parser) {
+	public List<Row> getResource(String filePath, final ResourcesParser parser) {
 
-		final List<Tuple2<String, String>> tuples = new LinkedList<>();
+		final List<Row> tuples = new LinkedList<>();
 
 		try {
 			final BufferedReader reader = new BufferedReader(new FileReader(filePath));
