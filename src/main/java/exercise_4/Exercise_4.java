@@ -1,6 +1,5 @@
 package exercise_4;
 
-import com.clearspring.analytics.util.Lists;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.Dataset;
@@ -17,14 +16,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import scala.Tuple2;
-
 public class Exercise_4 {
 
+	// constants
 	final static String FILE_SEPARATOR = File.separator;
 	final static String RESOURCES_FILE_PATH =
 			"src" + FILE_SEPARATOR +
@@ -33,30 +30,28 @@ public class Exercise_4 {
 	final static String EDGES_FILE_PATH = RESOURCES_FILE_PATH + FILE_SEPARATOR + "wiki-edges.txt";
 	final static String VERTICES_FILE_PATH = RESOURCES_FILE_PATH + FILE_SEPARATOR + "wiki-vertices.txt";
 
+	// loading procedure and Page Rank
 	public static void wikipedia(JavaSparkContext ctx, SQLContext sqlCtx) {
 
 		final List<Row> vertices_list =
 				new ResourcesReaderImpl().getResource(VERTICES_FILE_PATH, new Splitter());
 
-		JavaRDD<Row> vertices_rdd = ctx.parallelize(vertices_list);
+		final List<Row> edges_list =
+				new ResourcesReaderImpl().getResource(EDGES_FILE_PATH, new Splitter());
 
 		StructType vertices_schema = new StructType(new StructField[]{
 				new StructField("id", DataTypes.StringType, true, new MetadataBuilder().build()),
 				new StructField("article", DataTypes.StringType, true, new MetadataBuilder().build()),
 		});
-
-		Dataset<Row> vertices =  sqlCtx.createDataFrame(vertices_rdd, vertices_schema);
-
-		final List<Row> edges_list =
-				new ResourcesReaderImpl().getResource(EDGES_FILE_PATH, new Splitter());
-
-		JavaRDD<Row> edges_rdd = ctx.parallelize(edges_list);
-
+		
 		StructType edges_schema = new StructType(new StructField[]{
 				new StructField("src", DataTypes.StringType, true, new MetadataBuilder().build()),
 				new StructField("dst", DataTypes.StringType, true, new MetadataBuilder().build()),
 		});
 
+		JavaRDD<Row> vertices_rdd = ctx.parallelize(vertices_list);
+		Dataset<Row> vertices =  sqlCtx.createDataFrame(vertices_rdd, vertices_schema);
+		JavaRDD<Row> edges_rdd = ctx.parallelize(edges_list);
 		Dataset<Row> edges = sqlCtx.createDataFrame(edges_rdd, edges_schema);
 
 		GraphFrame gf = GraphFrame.apply(vertices,edges);
