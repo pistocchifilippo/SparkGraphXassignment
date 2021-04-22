@@ -28,21 +28,51 @@ public class Exercise_4 {
 	final static String FILE_SEPARATOR = File.separator;
 	final static String RESOURCES_FILE_PATH =
 			"src" + FILE_SEPARATOR +
-					"main" + FILE_SEPARATOR +
-					"resources";
+			"main" + FILE_SEPARATOR +
+			"resources";
 	final static String EDGES_FILE_PATH = RESOURCES_FILE_PATH + FILE_SEPARATOR + "wiki-edges.txt";
 	final static String VERTICES_FILE_PATH = RESOURCES_FILE_PATH + FILE_SEPARATOR + "wiki-vertices.txt";
 
 	public static void wikipedia(JavaSparkContext ctx, SQLContext sqlCtx) {
 
-		final List<Row> vertices =
+		final List<Row> vertices_list =
 				new ResourcesReaderImpl().getResource(VERTICES_FILE_PATH, new Splitter());
 
-		final List<Row> edges =
+		JavaRDD<Row> vertices_rdd = ctx.parallelize(vertices_list);
+
+		StructType vertices_schema = new StructType(new StructField[]{
+				new StructField("id", DataTypes.StringType, true, new MetadataBuilder().build()),
+				new StructField("article", DataTypes.StringType, true, new MetadataBuilder().build()),
+		});
+
+		Dataset<Row> vertices =  sqlCtx.createDataFrame(vertices_rdd, vertices_schema);
+
+		final List<Row> edges_list =
 				new ResourcesReaderImpl().getResource(EDGES_FILE_PATH, new Splitter());
+
+		JavaRDD<Row> edges_rdd = ctx.parallelize(edges_list);
+
+		StructType edges_schema = new StructType(new StructField[]{
+				new StructField("src", DataTypes.StringType, true, new MetadataBuilder().build()),
+				new StructField("dst", DataTypes.StringType, true, new MetadataBuilder().build()),
+		});
+
+		Dataset<Row> edges = sqlCtx.createDataFrame(edges_rdd, edges_schema);
+
+		GraphFrame gf = GraphFrame.apply(vertices,edges);
+
+		System.out.println(gf);
+
+		gf.edges().show();
+		gf.vertices().show();
+
 	}
 
 }
+
+
+
+
 
 interface ResourcesReader {
 	List<Row> getResource(final String filePath, final ResourcesParser parser);
