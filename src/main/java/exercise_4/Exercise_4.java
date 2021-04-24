@@ -2,10 +2,7 @@ package exercise_4;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.RowFactory;
-import org.apache.spark.sql.SQLContext;
+import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.MetadataBuilder;
 import org.apache.spark.sql.types.StructField;
@@ -30,6 +27,10 @@ public class Exercise_4 {
 	final static String EDGES_FILE_PATH = RESOURCES_FILE_PATH + FILE_SEPARATOR + "wiki-edges.txt";
 	final static String VERTICES_FILE_PATH = RESOURCES_FILE_PATH + FILE_SEPARATOR + "wiki-vertices.txt";
 
+	// PageRank parameters
+	final static double DAMPING_FACTOR = 0.85;
+	final static int MAX_ITERATIONS = 10;
+
 	// loading procedure and Page Rank
 	public static void wikipedia(JavaSparkContext ctx, SQLContext sqlCtx) {
 
@@ -38,6 +39,9 @@ public class Exercise_4 {
 
 		final List<Row> edges_list =
 				new ResourcesReaderImpl().getResource(EDGES_FILE_PATH, new Splitter());
+
+		System.out.println(vertices_list.size() + " Vertices will be loaded");
+		System.out.println(edges_list.size() + " Edges will be loaded");
 
 		StructType vertices_schema = new StructType(new StructField[]{
 				new StructField("id", DataTypes.StringType, true, new MetadataBuilder().build()),
@@ -50,24 +54,23 @@ public class Exercise_4 {
 		});
 
 		JavaRDD<Row> vertices_rdd = ctx.parallelize(vertices_list);
-		Dataset<Row> vertices =  sqlCtx.createDataFrame(vertices_rdd, vertices_schema);
 		JavaRDD<Row> edges_rdd = ctx.parallelize(edges_list);
+		Dataset<Row> vertices =  sqlCtx.createDataFrame(vertices_rdd, vertices_schema);
 		Dataset<Row> edges = sqlCtx.createDataFrame(edges_rdd, edges_schema);
 
 		GraphFrame gf = GraphFrame.apply(vertices,edges);
-
-		System.out.println(gf);
-
-		gf.edges().show();
-		gf.vertices().show();
+		
+		gf.pageRank()
+				.resetProbability(1-DAMPING_FACTOR)
+				.maxIter(MAX_ITERATIONS)
+				.run()
+				.vertices()
+				.orderBy(org.apache.spark.sql.functions.col("pagerank").desc())
+				.show();
 
 	}
 
 }
-
-
-
-
 
 interface ResourcesReader {
 	List<Row> getResource(final String filePath, final ResourcesParser parser);
