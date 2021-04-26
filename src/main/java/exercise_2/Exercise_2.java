@@ -26,21 +26,34 @@ public class Exercise_2 {
     private static class VProg extends AbstractFunction3<Long,Integer,Integer,Integer> implements Serializable {
         @Override
         public Integer apply(Long vertexID, Integer vertexValue, Integer message) {
-            return null;
+            if (message == Integer.MAX_VALUE) {             // superstep 0
+                return vertexValue;
+            } else {                                        // superstep > 0
+                return Math.min(vertexValue, message);
+            }
         }
     }
 
     private static class sendMsg extends AbstractFunction1<EdgeTriplet<Integer,Integer>, Iterator<Tuple2<Object,Integer>>> implements Serializable {
         @Override
         public Iterator<Tuple2<Object, Integer>> apply(EdgeTriplet<Integer, Integer> triplet) {
-            return null;
+            Tuple2<Object,Integer> v_origin = triplet.toTuple()._1();
+            Tuple2<Object,Integer> v_destination = triplet.toTuple()._2();
+            if (v_origin._2 + triplet.toTuple()._3() < v_destination._2 && v_origin._2 != Integer.MAX_VALUE ) {
+                // propagate source vertex value + value of the edge
+                return JavaConverters.asScalaIteratorConverter(Arrays.asList(new Tuple2<Object,Integer>(triplet.dstId(),v_origin._2 + triplet.toTuple()._3())).iterator()).asScala();
+            } else {
+                // do nothing
+                return JavaConverters.asScalaIteratorConverter(new ArrayList<Tuple2<Object,Integer>>().iterator()).asScala();
+            }
         }
     }
 
     private static class merge extends AbstractFunction2<Integer,Integer,Integer> implements Serializable {
         @Override
         public Integer apply(Integer o, Integer o2) {
-            return null;
+            System.out.println("ZWRACAM" + Math.min(o, o2));
+            return Math.min(o, o2);
         }
     }
 
