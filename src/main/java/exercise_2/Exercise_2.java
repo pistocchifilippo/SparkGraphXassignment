@@ -52,7 +52,6 @@ public class Exercise_2 {
     private static class merge extends AbstractFunction2<Integer,Integer,Integer> implements Serializable {
         @Override
         public Integer apply(Integer o, Integer o2) {
-            System.out.println("ZWRACAM" + Math.min(o, o2));
             return Math.min(o, o2);
         }
     }
@@ -102,7 +101,7 @@ public class Exercise_2 {
                 ClassTag$.MODULE$.apply(Integer.class))
             .vertices()
             .toJavaRDD()
-            .foreach(v -> {
+            .foreach(v ->{
                 Tuple2<Object,Integer> vertex = (Tuple2<Object,Integer>)v;
                 System.out.println("Minimum cost to get from "+labels.get(1l)+" to "+labels.get(vertex._1)+" is "+vertex._2);
             });
