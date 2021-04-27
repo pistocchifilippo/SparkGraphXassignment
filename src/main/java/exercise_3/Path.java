@@ -1,50 +1,51 @@
 package exercise_3;
 
-import com.clearspring.analytics.util.Lists;
 import scala.Serializable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
-public class Path implements Serializable {
+public class Path implements Serializable{
+
     private Integer cost;
-    private ArrayList<String> currentPath;
-    private String s;
+    private List<Long> path;
 
-    public Path(Integer cost) {
+    public Path(Integer cost)
+    {
+        this.path = new ArrayList<>();
         this.cost = cost;
-        this.currentPath = new ArrayList<String>();
-        System.out.println("DONE");
     }
 
-    public Path(Integer cost, String s) {
-        this.cost = cost;
-        ArrayList temp = new ArrayList<String>();
-        temp.add(s);
-        this.currentPath = temp;
-
-        System.out.println("EEEEE");
+    public Path(Integer cost, List<Long> path)
+    {
+        this(cost);
+        this.path.addAll(path);
     }
 
-    public Path(Integer cost, ArrayList<String> currentPath) {
-        this.cost = cost;
-        this.currentPath = currentPath;
+    public Path(Integer cost, Long... path)
+    {
+        this(cost, Arrays.asList(path));
     }
 
     public Integer getCost() {
         return cost;
     }
 
-    public ArrayList<String> getCurrentPath() {
-        return currentPath;
-    }
-
     public void setCost(Integer cost) {
         this.cost = cost;
     }
 
-    public void setCurrentPath(ArrayList<String> currentPath) {
-        this.currentPath = currentPath;
+    public List<Long> getPath() {
+        return path;
+    }
+
+    public void setPath(List<Long> path) {
+        this.path = path;
+    }
+
+    public void addVertexToPath(Long id) {
+        path.add(id);
     }
 
 }
